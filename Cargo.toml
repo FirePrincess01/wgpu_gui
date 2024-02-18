@@ -1,0 +1,10 @@
+
+
+[workspace]
+
+members = [
+    "wgpu_renderer",
+    "wgpu-gui",
+]
+
+resolver = "2"
