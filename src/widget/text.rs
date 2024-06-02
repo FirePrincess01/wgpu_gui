@@ -1,11 +1,11 @@
-use crate::core::{gui_functions::GuiFunctions, gui_message::GuiMessage, mouse_event::MouseEvent, size::Size};
+use crate::core::{gui_functions::GuiElement, mouse_event::MouseEvent, size::Size};
 
 
 
 
 
 pub struct Text {
-    space: u32,
+    _space: u32,
     size: u32,
     value: i32,
 }
@@ -13,7 +13,7 @@ pub struct Text {
 impl Text {
     pub fn from_space(space: u32) -> Self {
         Self {
-            space: space,
+            _space: space,
             size: 0,
             value: 0,
         }
@@ -29,10 +29,10 @@ impl Text {
     }
 }
 
-impl<TMessage> GuiFunctions<TMessage> for Text {
+impl<TMessage> GuiElement<TMessage> for Text {
     fn mouse_event(&mut self, 
-        mouse_event: &MouseEvent, 
-        models: &mut [&mut dyn GuiMessage<TMessage>]) -> bool {
+        _mouse_event: &MouseEvent, 
+        _models: &mut dyn FnMut(TMessage)) -> bool {
         todo!()
     }
 
@@ -40,11 +40,16 @@ impl<TMessage> GuiFunctions<TMessage> for Text {
         todo!()
     }
 
-    fn resize(&mut self, size: Size) {
+    fn resize(&mut self, _abs_x: u32, _abs_y: u32, _size: Size) {
         todo!()
     }
 
     fn draw(&mut self) {
         todo!()
     }
+    
+    fn size(&mut self) -> Size {
+        todo!()
+    }
+
 }

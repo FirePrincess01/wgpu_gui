@@ -1,6 +1,6 @@
 
 
-
+#[derive(Clone)]
 pub struct MouseEvent {
     pub x: u32,
     pub y: u32,
