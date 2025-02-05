@@ -1,3 +1,5 @@
+use crate::widget::widget_renderer::WidgetRenderer;
+
 use super::{gui_functions::GuiElement, mouse_event::MouseEvent, size::Size, wgpu_gui::LayoutElements};
 
 
@@ -91,6 +93,7 @@ impl Layout
     }
 
     pub fn resize<TMessage>(&mut self, 
+        widget_renderer: &mut dyn WidgetRenderer,
         abs_x: u32, abs_y: u32, _size: Size,
         elements: &mut dyn FnMut(&mut LayoutElements<TMessage>)
     )
@@ -108,9 +111,10 @@ impl Layout
 
             let element_abs_x = abs_x + delta_width;
             let element_abs_y = abs_y + self.size.height/2 - elem_size.height/2;
-            element.resize(element_abs_x, element_abs_y, elem_size);
+            element.resize(widget_renderer, element_abs_x, element_abs_y, elem_size);
 
             delta_width += elem_size.width;
         }));
     }
 }
+

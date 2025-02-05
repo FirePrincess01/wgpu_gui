@@ -1,4 +1,8 @@
+use wgpu_renderer::renderer::WgpuRendererInterface;
+
 use crate::core::{gui_functions::GuiElement, mouse_event::MouseEvent, size::Size};
+
+use super::widget_renderer::WidgetRenderer;
 
 
 
@@ -36,17 +40,17 @@ impl<TMessage> GuiElement<TMessage> for Text {
         todo!()
     }
 
-    fn update_device(&mut self) {
+    // fn update_device(&mut self, wgpu_renderer: &mut dyn WgpuRendererInterface) {
+    //     todo!()
+    // }
+
+    fn resize(&mut self, widget_renderer: &mut dyn WidgetRenderer, _abs_x: u32, _abs_y: u32, _size: Size) {
         todo!()
     }
 
-    fn resize(&mut self, _abs_x: u32, _abs_y: u32, _size: Size) {
-        todo!()
-    }
-
-    fn draw(&mut self) {
-        todo!()
-    }
+    // fn draw<'a>(&mut self, render_pass: &mut wgpu::RenderPass<'a>) {
+    //     todo!()
+    // }
     
     fn size(&mut self) -> Size {
         todo!()

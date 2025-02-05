@@ -4,18 +4,18 @@
 use super::{gui_functions::GuiElement, layout::Layout};
 
 pub struct WgpuGui<'a, TMessage> {
-    visitor: &'a mut dyn FnMut(&mut Layout, &mut dyn FnMut(&mut LayoutElements<TMessage>)),
+    layout_function: &'a mut dyn FnMut(&mut Layout, &mut dyn FnMut(&mut LayoutElements<TMessage>)),
 }
 
 impl<'a, TMessage>  WgpuGui<'a, TMessage>  {
 
-    pub fn new(visitor: &'a mut dyn FnMut(&mut Layout, &mut dyn FnMut(&mut LayoutElements<TMessage>))) -> Self {
-        Self { visitor }
+    pub fn new(layout_function: &'a mut dyn FnMut(&mut Layout, &mut dyn FnMut(&mut LayoutElements<TMessage>))) -> Self {
+        Self { layout_function }
     }
     
     pub fn layout(&mut self, layout: &mut Layout, elements: &mut impl FnMut(&mut LayoutElements<TMessage>) 
     ) {
-        (self.visitor)(layout, elements);
+        (self.layout_function)(layout, elements);
     }
 }
 
