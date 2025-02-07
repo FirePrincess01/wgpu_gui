@@ -1,6 +1,5 @@
 
 
 pub mod button;
-pub mod text;
-pub mod widget_factory;
+pub mod label;
 pub mod widget_renderer;

@@ -92,6 +92,10 @@ impl Layout
         res
     }
 
+    pub fn update(&mut self, widget_renderer: &mut dyn WidgetRenderer) {
+        todo!()
+    }
+
     pub fn resize<TMessage>(&mut self, 
         widget_renderer: &mut dyn WidgetRenderer,
         abs_x: u32, abs_y: u32, _size: Size,

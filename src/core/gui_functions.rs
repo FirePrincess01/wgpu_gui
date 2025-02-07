@@ -28,16 +28,16 @@ impl<'a, TMessage> GuiElement<TMessage> for SubView<'a, TMessage> {
         true
     }
 
-    // fn update_device(&mut self, wgpu_renderer: &mut dyn WgpuRendererInterface) {
-    //     (self.elements)(&mut LayoutElements::new(&mut |element: &mut dyn GuiElement<TMessage>| {
-    //         element.update_device(wgpu_renderer);
-    //     }));
-    // }
+    fn update(&mut self, widget_renderer: &mut dyn WidgetRenderer) {
+        self.layout.update(widget_renderer);
+    }
 
     fn resize(&mut self, widget_renderer: &mut dyn WidgetRenderer, abs_x: u32, abs_y: u32, size: Size) {
         self.layout.resize(widget_renderer, abs_x, abs_y, size, &mut self.elements);
     }
 
+
+    
     // fn draw<'b>(&'b mut self, render_pass: &mut wgpu::RenderPass<'b>) {
     //     // (self.elements)(&mut LayoutElements::new(&mut |element: &mut dyn GuiElement<TMessage>| {
     //     //     element.draw(render_pass);
@@ -66,7 +66,7 @@ pub trait GuiElement<TMessage> {
 
     fn mouse_event(&mut self, mouse_event: &MouseEvent, model: &mut dyn FnMut(TMessage)) -> bool;
 
-    // fn update_device(&mut self, wgpu_renderer: &mut dyn WgpuRendererInterface);
+    fn update(&mut self, widget_renderer: &mut dyn WidgetRenderer);
 
     fn resize(&mut self, widget_renderer: &mut dyn WidgetRenderer, abs_x: u32, abs_y: u32, size: Size);
 
@@ -129,6 +129,12 @@ impl<T> GuiElement<T::TMessage> for T where T: GuiElementSubView {
 
     //     todo!()
     // }
+
+    fn update(&mut self, widget_renderer: &mut dyn WidgetRenderer) {
+        self.get_elements(&mut WgpuGui::new(&mut |layout: &mut Layout, elements: &mut dyn FnMut(&mut LayoutElements<T::TSubMessage>)| {
+            layout.update(widget_renderer);
+        }));
+    }
     
     fn size(&mut self) -> Size {
         let mut res = Size::new();
@@ -138,4 +144,6 @@ impl<T> GuiElement<T::TMessage> for T where T: GuiElementSubView {
 
         res
     }
+    
+
 }

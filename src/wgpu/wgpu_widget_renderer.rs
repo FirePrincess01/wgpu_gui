@@ -2,12 +2,13 @@ use std::ops::Index;
 
 use wgpu_renderer::{label::LabelMesh, renderer::WgpuRendererInterface, vertex_texture_shader::VertexTextureShaderDraw};
 
-use crate::widget::widget_renderer::WidgetRenderer;
+use crate::widget::widget_renderer::{LabelResult, WidgetRenderer};
 
 
-pub struct WidgetElement {
+pub struct WidgetElementLabel {
     pub is_visible: bool,
-    pub update_pending: bool,
+    // pub update_position: bool,
+    // pub update_text: bool,
 
     pub x: u32,
     pub y: u32,
@@ -19,50 +20,112 @@ pub struct WidgetElement {
     pub mesh: LabelMesh,
 }
 
-pub struct WgpuWidgetRenderer {
-    elements: Vec<WidgetElement>,
+pub struct WgpuWidgetRendererStorage {
+    pub labels: Vec<WidgetElementLabel>,
 }
 
-impl WgpuWidgetRenderer {
+impl WgpuWidgetRendererStorage {
     pub fn new() -> Self 
     {
         let elements= Vec::new();
     
-        Self { elements }
-    }
-
-    pub fn add_element(&mut self, element: WidgetElement) -> usize {
-        let index = self.elements.len();
-        self.elements.push(element);
-        index // return index
-    }
-
-    pub fn update(&mut self, wgpu_renderer: &mut dyn WgpuRendererInterface) {
-        for elem in &mut self.elements {
-            if elem.update_pending {
-                elem.instance.position.x = elem.x as f32;
-                elem.instance.position.y = elem.y as f32;
-                elem.mesh.update_instance_buffer(wgpu_renderer.queue(), &elem.instance);
-                elem.update_pending = false;
-            }
-        }
+        Self { labels: elements }
     }
 
     pub fn draw<'a>(&'a self, render_pass: &mut wgpu::RenderPass<'a>) {
-        for elem in &self.elements {
+        for elem in &self.labels {
             elem.mesh.draw(render_pass);
         }
     }
 }
 
-impl WidgetRenderer for WgpuWidgetRenderer {
-    fn set_visible(&mut self, index: usize, is_visible: bool) {
-        self.elements[index].is_visible = is_visible;
-    }
+pub struct WgpuWidgetRenderer<'a>  {
+    pub storage: &'a mut WgpuWidgetRendererStorage,
 
-    fn set_position(&mut self, index: usize, x: u32, y: u32) {
-        self.elements[index].x = x;
-        self.elements[index].y = y;
-        self.elements[index].update_pending = true;
+    // wgpu renderer
+    pub font: &'a rusttype::Font<'static>,
+    pub wgpu_renderer: &'a mut dyn wgpu_renderer::renderer::WgpuRendererInterface,
+    pub texture_bind_group_layout: &'a wgpu_renderer::vertex_texture_shader::TextureBindGroupLayout,
+    
+}
+
+impl<'a> WidgetRenderer for WgpuWidgetRenderer<'a> {   
+    fn create_label(&mut self, text: &'static str, scale: u32) -> LabelResult {
+
+        // member variables
+        let font = self.font;
+        let wgpu_renderer = &mut self.wgpu_renderer;
+        let texture_bind_group_layout = self.texture_bind_group_layout;
+
+        // WgpuWidget elements
+        let is_visible = true;
+
+        let x = 0;
+        let y = 0;
+
+        let label = wgpu_renderer::label::Label::new(font, scale as f32, text);
+        let instance = wgpu_renderer::vertex_texture_shader::Instance::zero();
+
+        let mesh = wgpu_renderer::label::LabelMesh::new(
+            *wgpu_renderer,
+            label.get_image(),
+            texture_bind_group_layout,
+            &instance,
+        );
+
+        let width = label.width();
+        let height = label.height();
+
+
+        // create element entry
+        let element = WidgetElementLabel {
+            is_visible,
+            x,
+            y,
+            text,
+            label,
+            instance,
+            mesh,
+        };
+
+        let index = self.storage.labels.len();
+        self.storage.labels.push(element);
+
+        LabelResult{
+            index,
+            height,
+            width,
+        }
+
+    }
+    
+    fn set_label_text(&mut self, index: usize, text: &'static str) {
+        // member variables
+        let font = self.font;
+        let wgpu_renderer = &mut self.wgpu_renderer;
+
+        let elem = &mut self.storage.labels[index];
+
+        elem.text = text;
+        elem.label.update(font, text);
+        elem.mesh.update_texture(wgpu_renderer.queue(), elem.label.get_image());
+    }
+    
+    fn set_label_position(&mut self, index: usize, x: u32, y: u32) {
+
+        let elem = &mut self.storage.labels[index];
+
+        elem.x = x;
+        elem.y = y;
+
+        elem.instance.position.x = elem.x as f32;
+        elem.instance.position.y = elem.y as f32;
+        elem.mesh.update_instance_buffer(self.wgpu_renderer.queue(), &elem.instance);
+    }
+    
+    fn set_label_visible(&mut self, index: usize, is_visible: bool) {
+        let elem = &mut self.storage.labels[index];
+
+        elem.is_visible = is_visible;
     }
 }
