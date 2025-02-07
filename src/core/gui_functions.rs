@@ -29,7 +29,7 @@ impl<'a, TMessage> GuiElement<TMessage> for SubView<'a, TMessage> {
     }
 
     fn update(&mut self, widget_renderer: &mut dyn WidgetRenderer) {
-        self.layout.update(widget_renderer);
+        self.layout.update(widget_renderer, &mut self.elements);
     }
 
     fn resize(&mut self, widget_renderer: &mut dyn WidgetRenderer, abs_x: u32, abs_y: u32, size: Size) {
@@ -132,7 +132,7 @@ impl<T> GuiElement<T::TMessage> for T where T: GuiElementSubView {
 
     fn update(&mut self, widget_renderer: &mut dyn WidgetRenderer) {
         self.get_elements(&mut WgpuGui::new(&mut |layout: &mut Layout, elements: &mut dyn FnMut(&mut LayoutElements<T::TSubMessage>)| {
-            layout.update(widget_renderer);
+            layout.update(widget_renderer, elements);
         }));
     }
     

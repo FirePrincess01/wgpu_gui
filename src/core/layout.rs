@@ -7,8 +7,17 @@ use super::{gui_functions::GuiElement, mouse_event::MouseEvent, size::Size, wgpu
 
 pub enum Alignment {
     Center, 
+    
     Left,
-    Right
+    Right,
+    Top,
+    Bottom,
+    
+    LeftTop,
+    LeftBottom,
+
+    RightTop,
+    RightBottom,
 }
 
 pub enum LayoutKind {
@@ -38,6 +47,11 @@ impl Layout
     }
 
     pub fn horizontal_layout(mut self) -> Self {
+        self.layout = LayoutKind::Horizontal;
+        self
+    }
+
+    pub fn vertical_layout(mut self) -> Self {
         self.layout = LayoutKind::Vertical;
         self
     }
@@ -55,8 +69,16 @@ impl Layout
         elements(&mut LayoutElements::new(&mut |element: &mut dyn GuiElement<TMessage>| {
             let elem_size = element.size();
 
-            width = width + elem_size.width;
-            height = height.max(elem_size.height);
+            match self.layout {
+                LayoutKind::Horizontal => {
+                    width = width + elem_size.width;
+                    height = height.max(elem_size.height);
+                },
+                LayoutKind::Vertical => {
+                    width = width.max(elem_size.width);
+                    height = height + elem_size.height;
+                },
+            }
         }));
 
         self.size.width = width;
@@ -92,32 +114,90 @@ impl Layout
         res
     }
 
-    pub fn update(&mut self, widget_renderer: &mut dyn WidgetRenderer) {
-        todo!()
+    pub fn update<TMessage>(&mut self, 
+        widget_renderer: &mut dyn WidgetRenderer,
+        elements: &mut dyn FnMut(&mut LayoutElements<TMessage>),
+    )
+    {
+        elements(&mut LayoutElements::new(&mut |element: &mut dyn GuiElement<TMessage>| {
+            element.update(widget_renderer);
+        }));
     }
 
     pub fn resize<TMessage>(&mut self, 
         widget_renderer: &mut dyn WidgetRenderer,
-        abs_x: u32, abs_y: u32, _size: Size,
+        abs_x: u32, abs_y: u32, size: Size,
         elements: &mut dyn FnMut(&mut LayoutElements<TMessage>)
     )
     {
         self.calculate_element_size(elements);
 
 
-        self.abs_x = abs_x;
-        self.abs_y = abs_y;
-        let mut delta_width = 0;
+        // alignment
+        match self.alignment {
+            Alignment::Center => {
+                self.abs_x = size.width/2 - self.size.width/2;
+                self.abs_y = size.height/2 - self.size.height/2;
+            },
+            Alignment::Left => {
+                self.abs_x = 0;
+                self.abs_y = size.height/2 - self.size.height/2;
+            },
+            Alignment::Right => {
+                self.abs_x = size.width - self.size.width;
+                self.abs_y = size.height/2 - self.size.height/2;
+            },
+            Alignment::Top => {
+                self.abs_x = size.width/2 - self.size.width/2;
+                self.abs_y = size.height - self.size.height;
+            },
+            Alignment::Bottom => {
+                self.abs_x = size.width/2 - self.size.width/2;
+                self.abs_y = 0;
+            },
+            Alignment::LeftTop => {
+                self.abs_x = 0;
+                self.abs_y = size.height - self.size.height;
+            },
+            Alignment::LeftBottom => {
+                self.abs_x = 0;
+                self.abs_y = 0;
+            },
+            Alignment::RightTop => {
+                self.abs_x = size.width - self.size.width;
+                self.abs_y = size.height - self.size.height;
+            },
+            Alignment::RightBottom => {
+                self.abs_x = size.width - self.size.width;
+                self.abs_y = 0;
+            },
+        }
+
+        // layout
+        // self.abs_x = abs_x;
+        // self.abs_y = abs_y;
+        let mut delta = 0;
 
         elements(&mut LayoutElements::new(&mut |element: &mut dyn GuiElement<TMessage>| {
 
             let elem_size = element.size();
 
-            let element_abs_x = abs_x + delta_width;
-            let element_abs_y = abs_y + self.size.height/2 - elem_size.height/2;
-            element.resize(widget_renderer, element_abs_x, element_abs_y, elem_size);
+            match self.layout {
+                LayoutKind::Horizontal => {
+                    let element_abs_x = self.abs_x + delta;
+                    let element_abs_y = self.abs_y + self.size.height/2 - elem_size.height/2;
+                    
+                    element.resize(widget_renderer, element_abs_x, element_abs_y, elem_size);
+                    delta += elem_size.width;
+                },
+                LayoutKind::Vertical => {
+                    let element_abs_x = self.abs_x + self.size.width/2 - elem_size.width/2;
+                    let element_abs_y = self.abs_y + delta;
 
-            delta_width += elem_size.width;
+                    element.resize(widget_renderer, element_abs_x, element_abs_y, elem_size);
+                    delta += elem_size.height;
+                },
+            }            
         }));
     }
 }
