@@ -1,6 +1,6 @@
 use crate::widget::widget_renderer::WidgetRenderer;
 
-use super::{gui_functions::GuiElement, mouse_event::MouseEvent, size::Size, wgpu_gui::LayoutElements};
+use super::{gui_functions::{GuiElement, GuiEventResult}, mouse_event::MouseEvent, size::Size, wgpu_gui::LayoutElements};
 
 
 
@@ -97,7 +97,7 @@ impl Layout
 
     pub fn mouse_event<TMessage>(&self, 
         mouse_event: &MouseEvent, 
-        model: &mut dyn FnMut(TMessage),
+        event_result: &mut GuiEventResult<TMessage>,
         elements: &mut [&mut dyn GuiElement<TMessage>]
     ) -> bool 
     {
@@ -110,7 +110,7 @@ impl Layout
 
         let mut res = false;
         for element in elements {
-            res = res || element.mouse_event(mouse_event, model);
+            res = res || element.mouse_event(mouse_event, event_result);
         }
 
         res

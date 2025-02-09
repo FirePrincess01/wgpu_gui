@@ -63,10 +63,9 @@ impl Label {
 }
 
 impl<TMessage> GuiElement<TMessage> for Label {
-    fn mouse_event(
-        &mut self,
-        mouse_event: &crate::core::mouse_event::MouseEvent,
-        model: &mut dyn FnMut(TMessage),
+    fn mouse_event(&mut self, 
+        mouse_event: &crate::core::mouse_event::MouseEvent, 
+        event_result: &mut crate::core::gui_functions::GuiEventResult<TMessage>
     ) -> bool {
         if self.is_inside(mouse_event.x, mouse_event.y) {
             // println!("x:{}, y:{}", mouse_event.x, mouse_event.y);

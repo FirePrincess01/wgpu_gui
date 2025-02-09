@@ -6,15 +6,34 @@ use super::layout::{self, Layout};
 use super::wgpu_gui::{GuiElementContainer, LayoutElements, WgpuGui};
 use super::{mouse_event::MouseEvent, size::Size};
 
-struct GuiEventResult<TMessage> {
-    pub mouse_event_consumed: bool,
-    pub events_generated: [Option<TMessage>; 2],
+pub struct GuiEventResult<TMessage> {
+    pub events: [Option<TMessage>; 2],
 }
+
+impl<TMessage> GuiEventResult<TMessage> {
+    pub fn new() -> Self {
+        let events = [None, None];
+
+        Self { events }
+    }
+
+    pub fn add(&mut self, event: TMessage) 
+        where TMessage: Copy 
+    {
+        for elem in &mut self.events {
+            if elem.is_none() {
+                *elem = Some(event);
+                break;
+            }
+        }
+    }
+}
+
 
 pub trait GuiElement<TMessage> {    
     fn size(&mut self) -> Size;
 
-    fn mouse_event(&mut self, mouse_event: &MouseEvent, model: &mut dyn FnMut(TMessage)) -> bool;
+    fn mouse_event(&mut self, mouse_event: &MouseEvent, event_result: &mut GuiEventResult<TMessage>) -> bool;
 
     fn update(&mut self, widget_renderer: &mut dyn WidgetRenderer);
 
@@ -38,33 +57,45 @@ impl<'a, TMessage> GuiElementVisitor<TMessage>  for GuiElementVisitorClosure<'a,
 
 pub trait GuiElementSubView
 {
-    type TMessage;
-    type TSubMessage;
+    type TMessage: Copy;
+    type TSubMessage: Copy;
 
     fn visit_elements(&mut self, visitor: &mut dyn GuiElementVisitor<Self::TSubMessage>);
 
-    fn get_event_conversion_function(&self) -> fn(Self::TSubMessage) -> Self::TMessage;
+    fn on_event(&mut self, event: Self::TSubMessage) -> Self::TMessage;
 
 }
 
 impl<T> GuiElement<T::TMessage> for T where T: GuiElementSubView {
-    fn mouse_event(&mut self, mouse_event: &MouseEvent, model: &mut dyn FnMut(T::TMessage)) -> bool
+    fn mouse_event(&mut self, mouse_event: &MouseEvent, event_result: &mut GuiEventResult<T::TMessage>)
+     -> bool
     {
-        let conversion_function = self.get_event_conversion_function();
-        let mut model_converted = |sub_message: T::TSubMessage| {
-            model(conversion_function(sub_message));
-        };
+        // create result container
+        let mut event_result_1: GuiEventResult<T::TSubMessage> = GuiEventResult::new();
+        let mut res = false;
 
+        // visit all gui elements
         let mut visitor = GuiElementVisitorClosure {
             func: &mut |layout: &mut Layout, elements: &mut [&mut dyn GuiElement<_>]| 
             {
-                layout.mouse_event(mouse_event, &mut model_converted, elements);
+                res = layout.mouse_event(mouse_event, &mut event_result_1, elements);
             }
         };
 
         self.visit_elements(&mut visitor);
 
-        true
+        // convert events
+        for event in event_result_1.events {
+            match event {
+                Some(event) =>  {
+                    let event_converted = self.on_event(event);
+                    event_result.add(event_converted);
+                },
+                None => {},
+            }            
+        }
+
+        res
     }
 
     fn resize(&mut self, widget_renderer: &mut dyn WidgetRenderer, abs_x: u32, abs_y: u32, size: Size)
@@ -107,4 +138,13 @@ impl<T> GuiElement<T::TMessage> for T where T: GuiElementSubView {
     }
     
 
+}
+
+
+
+pub trait GuiElementEvent {
+    type TMessage;
+    type TSubMessage;
+
+    fn on_event(&mut self, message: Self::TMessage) -> Self::TSubMessage;
 }

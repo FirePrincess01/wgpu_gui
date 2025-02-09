@@ -65,12 +65,18 @@ impl<TMessage> Button<TMessage>
 }
 
 impl<TMessage> GuiElement<TMessage> for Button<TMessage> where TMessage: Copy, {
-    fn mouse_event(&mut self, mouse_event: &crate::core::mouse_event::MouseEvent, model: &mut dyn FnMut(TMessage)) -> bool {
+    fn mouse_event(&mut self, 
+        mouse_event: &crate::core::mouse_event::MouseEvent, 
+        event_result: &mut crate::core::gui_functions::GuiEventResult<TMessage>
+    ) -> bool {
         if self.is_inside(mouse_event.x, mouse_event.y) {
             // println!("x:{}, y:{}", mouse_event.x, mouse_event.y);
             if self.pressed && !mouse_event.is_pressed {
                 match self.message_released {
-                    Some(message_released) => model(message_released),
+                    Some(message_released) => {
+                        // println!("button.rs");
+                        event_result.add(message_released);
+                    },
                     None => {}
                 }
             }
