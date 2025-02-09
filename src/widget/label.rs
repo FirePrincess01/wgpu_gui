@@ -5,7 +5,7 @@ use crate::core::{gui_functions::GuiElement, mouse_event::MouseEvent, size::Size
 use super::widget_renderer::WidgetRenderer;
 
 pub struct Label {
-    text: &'static str,
+    text: String,
 
     render_index: usize,
 
@@ -22,8 +22,8 @@ pub struct Label {
     update_pending: bool,
 }
 
-impl Label {
-    pub fn new<'a>(renderer: &'a mut dyn WidgetRenderer, text: &'static str, scale: u32) -> Self {
+impl  Label {
+    pub fn new<'b>(renderer: &'b mut dyn WidgetRenderer, text: &'static str, scale: u32) -> Self {
         let res = renderer.create_label(text, scale);
 
         let boarder = 5;
@@ -34,7 +34,7 @@ impl Label {
         let abs_y = 0;
 
         Self {
-            text,
+            text: String::from(text),
 
             render_index: res.index,
 
@@ -49,7 +49,7 @@ impl Label {
         }
     }
 
-    pub fn set(&mut self, text: &'static str) {
+    pub fn set(&mut self, text: String) {
         self.text = text;
         self.update_pending = true;
     }
@@ -77,7 +77,7 @@ impl<TMessage> GuiElement<TMessage> for Label {
 
     fn update(&mut self, widget_renderer: &mut dyn WidgetRenderer) {
         if self.update_pending {
-            widget_renderer.set_label_text(self.render_index, self.text);
+            widget_renderer.set_label_text(self.render_index, &self.text);
             self.update_pending = false;
         }
     }

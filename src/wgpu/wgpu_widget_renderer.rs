@@ -13,7 +13,6 @@ pub struct WidgetElementLabel {
     pub x: u32,
     pub y: u32,
 
-    pub text: &'static str,
     pub label: wgpu_renderer::label::Label,
     pub instance: wgpu_renderer::vertex_texture_shader::Instance,
 
@@ -32,7 +31,7 @@ impl WgpuWidgetRendererStorage {
         Self { labels: elements }
     }
 
-    pub fn draw<'a>(&'a self, render_pass: &mut wgpu::RenderPass<'a>) {
+    pub fn draw<'b>(&'b self, render_pass: &mut wgpu::RenderPass<'b>) {
         for elem in &self.labels {
             elem.mesh.draw(render_pass);
         }
@@ -50,7 +49,7 @@ pub struct WgpuWidgetRenderer<'a>  {
 }
 
 impl<'a> WidgetRenderer for WgpuWidgetRenderer<'a> {   
-    fn create_label(&mut self, text: &'static str, scale: u32) -> LabelResult {
+    fn create_label(&mut self, text: &str, scale: u32) -> LabelResult {
 
         // member variables
         let font = self.font;
@@ -82,7 +81,6 @@ impl<'a> WidgetRenderer for WgpuWidgetRenderer<'a> {
             is_visible,
             x,
             y,
-            text,
             label,
             instance,
             mesh,
@@ -99,14 +97,13 @@ impl<'a> WidgetRenderer for WgpuWidgetRenderer<'a> {
 
     }
     
-    fn set_label_text(&mut self, index: usize, text: &'static str) {
+    fn set_label_text(&mut self, index: usize, text: &str) {
         // member variables
         let font = self.font;
         let wgpu_renderer = &mut self.wgpu_renderer;
 
         let elem = &mut self.storage.labels[index];
 
-        elem.text = text;
         elem.label.update(font, text);
         elem.mesh.update_texture(wgpu_renderer.queue(), elem.label.get_image());
     }
