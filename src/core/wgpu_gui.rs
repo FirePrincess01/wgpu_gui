@@ -35,5 +35,10 @@ impl<'a, TMessage>  LayoutElements<'a, TMessage>  {
 }
 
 
+pub struct GuiElementContainer<'a, TMessage> {
+    pub layout: &'a mut Layout,
+    pub elements: &'a mut dyn FnMut(&mut dyn FnMut(&mut dyn GuiElement<TMessage>))
 
+    
+}
 

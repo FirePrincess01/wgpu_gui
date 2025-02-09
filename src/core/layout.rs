@@ -61,12 +61,13 @@ impl Layout
         self
     }
 
-    fn calculate_element_size<TMessage>(&mut self, elements: &mut dyn FnMut(&mut LayoutElements<TMessage>)) {
+    fn calculate_element_size<TMessage>(&mut self, elements: &mut [&mut dyn GuiElement<TMessage>]) {
 
         let mut width =  0;
         let mut height = 0;
 
-        elements(&mut LayoutElements::new(&mut |element: &mut dyn GuiElement<TMessage>| {
+        for element in elements {
+
             let elem_size = element.size();
 
             match self.layout {
@@ -79,7 +80,7 @@ impl Layout
                     height = height + elem_size.height;
                 },
             }
-        }));
+        };
 
         self.size.width = width;
         self.size.height = height;
@@ -97,7 +98,7 @@ impl Layout
     pub fn mouse_event<TMessage>(&self, 
         mouse_event: &MouseEvent, 
         model: &mut dyn FnMut(TMessage),
-        elements: &mut dyn FnMut(&mut LayoutElements<TMessage>)
+        elements: &mut [&mut dyn GuiElement<TMessage>]
     ) -> bool 
     {
         // let x = mouse_event.x;
@@ -108,26 +109,28 @@ impl Layout
         // }
 
         let mut res = false;
-        elements(&mut LayoutElements::new(&mut |element: &mut dyn GuiElement<TMessage>| {
+        for element in elements {
             res = res || element.mouse_event(mouse_event, model);
-        }));
+        }
+
         res
     }
 
     pub fn update<TMessage>(&mut self, 
         widget_renderer: &mut dyn WidgetRenderer,
-        elements: &mut dyn FnMut(&mut LayoutElements<TMessage>),
+        elements:&mut [&mut dyn GuiElement<TMessage>],
     )
     {
-        elements(&mut LayoutElements::new(&mut |element: &mut dyn GuiElement<TMessage>| {
+        for element in elements {
             element.update(widget_renderer);
-        }));
+        };
+
     }
 
     pub fn resize<TMessage>(&mut self, 
         widget_renderer: &mut dyn WidgetRenderer,
         abs_x: u32, abs_y: u32, size: Size,
-        elements: &mut dyn FnMut(&mut LayoutElements<TMessage>)
+        elements: &mut [&mut dyn GuiElement<TMessage>]
     )
     {
         self.calculate_element_size(elements);
@@ -178,7 +181,7 @@ impl Layout
         // self.abs_y = abs_y;
         let mut delta = 0;
 
-        elements(&mut LayoutElements::new(&mut |element: &mut dyn GuiElement<TMessage>| {
+        for element in elements {
 
             let elem_size = element.size();
 
@@ -198,7 +201,7 @@ impl Layout
                     delta += elem_size.height;
                 },
             }            
-        }));
+        };
     }
 }
 
