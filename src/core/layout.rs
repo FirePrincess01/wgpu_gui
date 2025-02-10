@@ -1,6 +1,6 @@
 use crate::widget::widget_renderer::WidgetRenderer;
 
-use super::{gui_functions::{GuiElement, GuiEventResult}, mouse_event::MouseEvent, size::Size, wgpu_gui::LayoutElements};
+use super::{gui_functions::{GuiElement, GuiEventResult}, mouse_event::MouseEvent, size::Size};
 
 
 
@@ -129,7 +129,7 @@ impl Layout
 
     pub fn resize<TMessage>(&mut self, 
         widget_renderer: &mut dyn WidgetRenderer,
-        abs_x: u32, abs_y: u32, size: Size,
+        _abs_x: u32, _abs_y: u32, size: Size,
         elements: &mut [&mut dyn GuiElement<TMessage>]
     )
     {

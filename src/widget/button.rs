@@ -9,7 +9,7 @@ pub struct Button<TMessage> {
     // geometry
     width: u32,
     height: u32,
-    boarder: u32,
+    _boarder: u32,
 
     // position on the screen
     abs_x: u32,
@@ -42,7 +42,7 @@ impl<TMessage> Button<TMessage>
             message_released: None,
             render_index: res.index,
 
-            boarder,
+            _boarder: boarder,
             width,
             height,
 
@@ -89,7 +89,7 @@ impl<TMessage> GuiElement<TMessage> for Button<TMessage> where TMessage: Copy, {
         false
     }
 
-    fn update(&mut self, widget_renderer: &mut dyn WidgetRenderer) {
+    fn update(&mut self, _widget_renderer: &mut dyn WidgetRenderer) {
         // nothing to do
     }
 

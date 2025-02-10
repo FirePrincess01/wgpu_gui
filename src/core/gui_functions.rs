@@ -124,7 +124,7 @@ impl<T> GuiElement<T::TMessage> for T where T: GuiElementSubView {
         let mut res = Size::new();
 
         let mut visitor = GuiElementVisitorClosure {
-            func: &mut |layout: &mut Layout, elements: &mut [&mut dyn GuiElement<_>]| 
+            func: &mut |layout: &mut Layout, _elements: &mut [&mut dyn GuiElement<_>]| 
             {
                 res = layout.size();
             }

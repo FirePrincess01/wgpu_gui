@@ -1,6 +1,5 @@
-use wgpu_renderer::renderer::WgpuRendererInterface;
 
-use crate::core::{gui_functions::GuiElement, mouse_event::MouseEvent, size::Size};
+use crate::core::{gui_functions::GuiElement, size::Size};
 
 use super::widget_renderer::WidgetRenderer;
 
@@ -12,7 +11,7 @@ pub struct Label {
     // geometry
     width: u32,
     height: u32,
-    boarder: u32,
+    _boarder: u32,
 
     // position on the screen
     abs_x: u32,
@@ -38,7 +37,7 @@ impl  Label {
 
             render_index: res.index,
 
-            boarder,
+            _boarder: boarder,
             width,
             height,
 
@@ -65,7 +64,7 @@ impl  Label {
 impl<TMessage> GuiElement<TMessage> for Label {
     fn mouse_event(&mut self, 
         mouse_event: &crate::core::mouse_event::MouseEvent, 
-        event_result: &mut crate::core::gui_functions::GuiEventResult<TMessage>
+        _event_result: &mut crate::core::gui_functions::GuiEventResult<TMessage>
     ) -> bool {
         if self.is_inside(mouse_event.x, mouse_event.y) {
             // println!("x:{}, y:{}", mouse_event.x, mouse_event.y);

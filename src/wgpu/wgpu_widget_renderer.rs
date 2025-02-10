@@ -1,6 +1,5 @@
-use std::ops::Index;
 
-use wgpu_renderer::{label::LabelMesh, renderer::WgpuRendererInterface, vertex_texture_shader::VertexTextureShaderDraw};
+use wgpu_renderer::{label::LabelMesh, vertex_texture_shader::VertexTextureShaderDraw};
 
 use crate::widget::widget_renderer::{LabelResult, WidgetRenderer};
 
