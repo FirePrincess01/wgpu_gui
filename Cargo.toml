@@ -6,3 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+wgpu_renderer = { path = "../wgpu_renderer" }
+rusttype = "0.9"
+wgpu = { version = "0.19", default-features = false, features = [ "webgl", "wgsl"  ]}
