@@ -1,9 +1,7 @@
-use wgpu_renderer::renderer::WgpuRendererInterface;
 
 use crate::widget::widget_renderer::WidgetRenderer;
 
-use super::layout::{self, Layout};
-use super::wgpu_gui::{GuiElementContainer, LayoutElements, WgpuGui};
+use super::layout::Layout;
 use super::{mouse_event::MouseEvent, size::Size};
 
 pub struct GuiEventResult<TMessage> {

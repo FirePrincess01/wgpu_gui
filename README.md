@@ -1,136 +1,79 @@
 # wgpu_gui
-A lightweight gui for any wgpu based renderer.
-Everything is explicitly defined, no hidden control-flow in the background (which results in slightly more code, but is easier to understand).
+Trying to implement an extendable graphical user interface while satisfying the borrow checker
+
+It works by implementing a widget renderer/factory which holds all the gpu specific information and some
+composition of objects representing the physical shape of the gui. The extensibility is achieved by 
+allowing to easily create sub-objects which can be re-instantiated. The communication to the data model is
+done by events using generics and enums.
 
 ```Rust
 
-/// Model
+// Example 
 
-enum Message {
+#[derive(Copy, Clone)]
+pub enum CounterMessage {
     IncrementPressed,
     DecrementPressed,
 }
 
-struct Counter {
-    value: i32,
+#[derive(Copy, Clone)]
+pub enum Message {
+    SubView1(CounterMessage),
+    SubView2(CounterMessage),
 }
 
-impl Counter {
-    pub fn new() -> {
-        Self {
-            value: 0,
-        }
-    }
 
-    pub fn message(&mut self, message: Message) {
-        match message {
-            Message::IncrementPressed => {
-                self.value += 1;
-            }
-            Message::DecrementPressed => {
-                self.value -= 1;
-            }
-        }
-    }
-
-    pub fn value(&self) {
-        value
-    }
-}
-
-/// GUI Implementation
-
-struct CounterGui {
-    type Button = wgpu_gui::Button<Message, wgpu::gui::default_pipeline::Button>;
-    type Text = wgpu_gui::Text<Message, wgpu::gui::default_pipeline::Text>;
-
-    button_increment: Button,
-    button_decrement: Button,
-    text: Text,
-    layout: wgpu_gui::Layout,
+pub struct CounterGui {
+    text: Label,
+    sub_view1: CounterGuiSubView,
+    sub_view2: CounterGuiSubView,
+    layout: Layout,
 }
 
 impl CounterGui {
-    pub fn new() -> Self 
+    pub fn new(
+        renderer: &mut dyn WidgetRenderer,
+    ) -> Self 
     {
-        let button_increment = Button::new("increment").on_released(Message::IncrementPressed);
-        let text = Text::from_space(5).size(50);
-        let button_decrement = Button::new("decrement").on_released(Message::DecrementPressed);
-        let layout = wgpu_gui::Layout::new();
+        let text = Label::new(renderer, "Hello World!", 32);
+        let sub_view1 = CounterGuiSubView::new(renderer, Message::SubView1);
+        let sub_view2 = CounterGuiSubView::new(renderer, Message::SubView2);
+        let layout = Layout::new().align(Alignment::Center).horizontal_layout();
 
         Self {
-            button_increment,
             text,
-            button_decrement,
+            sub_view1,
+            sub_view2,
             layout,
+            on_changed,
         }
     }
 
-    fn layout(&self) -> Elements {
-        let elements = layout.align(Alignment::Center).vertical_layout([&button_pressed, &text &button_released]);
-        elements
+    pub fn update(&mut self, counter1: &counter::Counter, counter2: &counter::Counter) {
+        self.text.set(String::from("lalalallalal"));
+        self.sub_view1.update(counter1.value());
+        self.sub_view2.update(counter2.value());
     }
-
-    pub fn mouse_event(&mut self, counter: &Counter, mouse_event: wgpu_gui::MouseEvent,) {
-         // handle messages
-        let messages = self.layout().event(mouse_event);
-        match messages {
-            Message(message):
-            counter.update(message);
-        }
-    }
-
-    pub fn update(counter: &Counter, mouse_event: wgpu_gui::MouseEvent) {
-        // update gui elements
-        self.text.set_value(counter.value);
-        self.layout().update();   // updates all changed textures on the gpu
-    }
-
-    // Draw functions
-
-    pub fn resize(&mut self, size: Size) {
-        self.layout().resize(size);
-    }
-
-    pub fn draw(&self) {
-        self.layout().draw();
-    }
-
 }
 
 
-
-/// User Renderer Implementation
-
-struct YourApplication{
-    ...
-    renderer: YoureRenderer,
-    counter: Counter,
-    counter_gui: CounterGui,
-    ...
-}
-
-impl YourApplication {
-    ...
-    pub fn mouse_event(&mut self) {
-        self.counter_gui.update(&mut self.counter);
-    }
+impl GuiElementSubView for CounterGui{
+    type TMessage = Message;
+    type TSubMessage = Message;
     
-    pub fn update(&mut self) {
-        self.counter_gui.update(&self.counter);
+    fn visit_elements(&mut self, visitor: &mut dyn wgpu_gui::core::gui_functions::GuiElementVisitor<Self::TSubMessage>) {
+        visitor.visit(&mut self.layout, &mut [
+            &mut self.text,
+            &mut self.sub_view1,
+            &mut self.sub_view2,
+        ]);
     }
-
-    pub fn resize(&mut self, size: Size) {
-        self.counter_gui.resize(&size);
-    }
-
-    pub fn draw(&self) {
-        self.counter_gui.draw();
-    }
-
-    ...
-
+        
+    fn on_event(&mut self, event: Self::TSubMessage) -> Self::TMessage {
+        event
+    }  
 }
+
 
 ```
 
