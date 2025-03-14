@@ -42,7 +42,7 @@ pub struct WgpuWidgetRenderer<'a>  {
 
     // wgpu renderer
     pub font: &'a rusttype::Font<'static>,
-    pub wgpu_renderer: &'a mut dyn wgpu_renderer::renderer::WgpuRendererInterface,
+    pub wgpu_renderer: &'a mut dyn wgpu_renderer::wgpu_renderer::WgpuRendererInterface,
     pub texture_bind_group_layout: &'a wgpu_renderer::vertex_texture_shader::TextureBindGroupLayout,
     
 }
